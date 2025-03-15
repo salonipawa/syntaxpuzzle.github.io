@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Syntax Puzzle Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            background: url('syntax(bg).jpg') no-repeat center center fixed;
+    background-size: cover;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: rgba(125, 125, 235, 0.625);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        h1, h2 {
+            color: #010101;
+        }
+        .puzzle-container, .dropzone {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .draggable {
+            padding: 10px;
+            background: #e0e0e0;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: grab;
+        }
+        .draggable:active {
+            background: #ffa500;
+        }
+
+        .dropzone {
+            border: 2px dashed #333;
+            min-height: 50px;
+            width: 80%;
+            margin: auto;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .dropzone .draggable {
+            background: #90ee90;
+        }
+
+        .button {
+            padding: 10px 20px;
+            margin-top: 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+        
+        .button:disabled {
+            background: grey;
+            cursor: not-allowed;
+        }
+        .message {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .win-screen {
+            display: none;
+            font-size: 24px;
+            color: gold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📌 Syntax Puzzle Game</h1>
+        <p>Arrange the shuffled code snippets in the correct order to form valid syntax.</p>
+        <h2>🎨 Drag-and-Drop Puzzle</h2>
+        <div class="puzzle-container" id="puzzle-container"></div>
+        <h3>Drop Here:</h3>
+        <div class="dropzone" id="dropzone"></div>
+        <button class="button" id="checkAnswer">Check Answer</button>
+        <p class="message" id="message"></p>
+        <button class="button" id="nextPuzzle" disabled>Next Puzzle</button>
+        <div class="win-screen" id="winScreen">🎉 Heyyy! You Win! 🏆</div>
+    </div>
+
+    <script>
+        const puzzles = [
+            ["function", "myFunction()", "{", "console.log(\"Hello\");", "}"],
+            ["let", "x", "=", "10", ";"],
+            ["const", "name", "=", "\"John\"", ";"],
+            ["if", "(x", ">", "10)", "{", "console.log(\"Greater\");", "}"],
+            ["for", "(let", "i", "=", "0;", "i", "<", "5;", "i++)", "{" , "console.log(i);", "}"],
+            ["while", "(x", ">", "0)", "{", "x--;", "}"],
+            ["switch", "(day)", "{", "case", "'Monday':", "console.log(\"Start\");", "break;", "}"],
+            ["try", "{", "console.log(a);", "}" , "catch", "(error)", "{", "console.log(error);", "}"],
+            ["async", "function", "fetchData()", "{", "let", "data", "=", "await", "fetch(url);", "}"],
+            ["class", "Person", "{", "constructor(name)", "{", "this.name", "=", "name;", "}" , "}"]
+        ];
+        let currentPuzzle = 0;
+        
+        function loadPuzzle() {
+            document.getElementById("puzzle-container").innerHTML = "";
+            document.getElementById("dropzone").innerHTML = "";
+            document.getElementById("message").innerText = "";
+            document.getElementById("nextPuzzle").disabled = true;
+            
+            const shuffled = [...puzzles[currentPuzzle]].sort(() => Math.random() - 0.5);
+            shuffled.forEach(word => {
+                const div = document.createElement("div");
+                div.classList.add("draggable");
+                div.draggable = true;
+                div.innerText = word;
+                div.addEventListener("dragstart", dragStart);
+                document.getElementById("puzzle-container").appendChild(div);
+            });
+        }
+        
+        function dragStart(event) {
+            event.dataTransfer.setData("text", event.target.innerText);
+        }
+        
+        document.getElementById("dropzone").addEventListener("dragover", event => event.preventDefault());
+        document.getElementById("dropzone").addEventListener("drop", event => {
+            event.preventDefault();
+            const text = event.dataTransfer.getData("text");
+            const div = document.createElement("div");
+            div.classList.add("draggable");
+            div.innerText = text;
+            document.getElementById("dropzone").appendChild(div);
+        });
+        
+        document.getElementById("checkAnswer").addEventListener("click", () => {
+            const answer = Array.from(document.getElementById("dropzone").children).map(el => el.innerText);
+            if (JSON.stringify(answer) === JSON.stringify(puzzles[currentPuzzle])) {
+                document.getElementById("message").innerText = "✅ Correct! Well done!";
+                document.getElementById("nextPuzzle").disabled = false;
+            } else {
+                document.getElementById("message").innerText = "❌ Incorrect. Try Again!";
+            }
+        });
+        
+        document.getElementById("nextPuzzle").addEventListener("click", () => {
+            currentPuzzle++;
+            if (currentPuzzle < puzzles.length) {
+                loadPuzzle();
+            } else {
+                document.getElementById("winScreen").style.display = "block";
+            }
+        });
+        
+        loadPuzzle();
+    </script>
+</body>
+</html>
